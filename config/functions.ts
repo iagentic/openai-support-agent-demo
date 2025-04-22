@@ -234,5 +234,6 @@ export const functionsMap = {
   create_return: create_return,
   create_complaint: create_complaint,
   update_info: update_info,
+  create_ticket: create_ticket,
   // add more functions as needed
 };
