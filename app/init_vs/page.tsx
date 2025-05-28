@@ -115,7 +115,7 @@ export default function InitVS() {
             Once the content is loaded, you will see the newly created vector
             store&apos;s ID below. You can then configure the vector store ID in{" "}
             <span className="font-mono bg-zinc-100 rounded-md p-1">
-              /config/demoData.ts
+              /config/constants.ts
             </span>{" "}
             to use with the File Search tool.
           </p>
