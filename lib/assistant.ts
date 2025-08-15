@@ -106,7 +106,7 @@ export const handleTurn = async (
   }
 };
 
-export const processMessages = async (sendMessage?: (message: any) => void) => {
+export const processMessages = async (sendAISuggestion?: (suggestion: any) => void) => {
   const {
     chatMessages,
     conversationItems,
@@ -122,13 +122,19 @@ export const processMessages = async (sendMessage?: (message: any) => void) => {
   const { setRelevantArticlesLoading, setFAQExtracts } =
     useDataStore.getState();
 
+  // Convert agent roles to assistant for OpenAI API compatibility
+  const convertedConversationItems = conversationItems.map(item => ({
+    ...item,
+    role: item.role === 'agent' ? 'assistant' : item.role
+  }));
+
   const allConversationItems = [
     // Adding developer prompt as first item in the conversation
     {
       role: "developer",
       content: DEVELOPER_PROMPT,
     },
-    ...conversationItems,
+    ...convertedConversationItems,
   ];
 
   let assistantMessageContent = "";
@@ -172,16 +178,17 @@ export const processMessages = async (sendMessage?: (message: any) => void) => {
       case "response.output_text.done": {
         setSuggestedMessageDone(true);
         
-        // Send AI response via WebSocket if sendMessage function is provided
-        if (sendMessage && assistantMessageContent.trim()) {
-          const aiMessage = {
+        // Send AI response as a suggestion to the agent view via WebSocket
+        if (sendAISuggestion && assistantMessageContent.trim()) {
+          const aiSuggestion = {
             id: Date.now().toString(),
-            type: "message",
+            type: "ai_suggestion",
             role: "assistant",
-            content: [{ type: "output_text", text: assistantMessageContent.trim() }]
+            content: [{ type: "output_text", text: assistantMessageContent.trim() }],
+            done: true
           };
-          console.log('Sending AI response via WebSocket:', aiMessage);
-          sendMessage(aiMessage);
+          console.log('Sending AI suggestion via WebSocket:', aiSuggestion);
+          sendAISuggestion(aiSuggestion);
         }
         break;
       }

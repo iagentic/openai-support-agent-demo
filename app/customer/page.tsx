@@ -41,8 +41,9 @@ export default function CustomerView() {
         addChatMessage(newItem);
         
         // Also add to conversation items for AI processing
+        // Convert agent role to assistant for OpenAI API compatibility
         const conversationItem = {
-          role: message.role,
+          role: message.role === 'agent' ? 'assistant' : message.role,
           content: Array.isArray(message.content) ? message.content[0]?.text || '' : message.content
         };
         addConversationItem(conversationItem);
@@ -107,7 +108,10 @@ export default function CustomerView() {
       sendMessage(messageToSend);
 
       // Process with AI - this will generate a response
-      await processMessages(sendMessage);
+      await processMessages((aiSuggestion) => {
+        // Send AI suggestion to agent view via WebSocket
+        sendMessage(aiSuggestion);
+      });
     } catch (error) {
       console.error("Error processing message:", error);
     }

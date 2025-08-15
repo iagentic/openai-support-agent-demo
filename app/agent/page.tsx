@@ -36,8 +36,19 @@ export default function AgentView() {
       // Handle incoming messages from other clients
       console.log('Agent received message:', message);
       
-      // Only add messages from user or assistant (AI), not from self
-      if (message.role === 'user' || message.role === 'assistant') {
+      // Handle different message types
+      if (message.type === 'ai_suggestion') {
+        console.log('Agent received AI suggestion:', message);
+        // Set this as a suggested message for the agent to review
+        const suggestedMessage = {
+          type: "message",
+          role: "agent",
+          id: message.id,
+          content: message.content,
+        } as any;
+        useConversationStore.getState().setSuggestedMessage(suggestedMessage);
+        useConversationStore.getState().setSuggestedMessageDone(true);
+      } else if (message.role === 'user' || message.role === 'assistant') {
         console.log('Agent processing message:', message);
         const newItem: Item = {
           type: message.type,
