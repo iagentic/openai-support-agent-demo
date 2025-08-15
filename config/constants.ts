@@ -24,4 +24,4 @@ Hi, I'm ${AGENT_NAME}, your support representative. How can I help you today?
 
 // Replace with the vector store ID you get after initializing the vector store
 // Go to /init_vs to initialize the vector store with the demo knowledge base
-export const VECTOR_STORE_ID = "vs_689e2d2c1c648191bb888dc854ef73c9";
+export const VECTOR_STORE_ID = "vs_689ebef98508819197aacb3b443289d9";

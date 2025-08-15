@@ -26,6 +26,8 @@ Feel free to customize this demo to suit your specific use case.
 
 ## How to use
 
+### Single Computer Demo
+
 1. **Set up the OpenAI API:**
 
    - If you're new to the OpenAI API, [sign up for an account](https://platform.openai.com/signup).
@@ -42,7 +44,7 @@ Feel free to customize this demo to suit your specific use case.
    2 options:
 
    - Set the `OPENAI_API_KEY` environment variable [globally in your system](https://platform.openai.com/docs/libraries#create-and-export-an-api-key)
-   - Set the `OPENAI_API_KEY` environment variable in the project: Create a `.env` file at the root of the project and add the following line (see `.env.example` for reference):
+   - Set the `OPENAI_API_KEY` environment variable in the project: Create a `.env` file at the root of the project and add the following line (see `env.example` for reference):
 
    ```bash
    OPENAI_API_KEY=<your_api_key>
@@ -59,6 +61,7 @@ Feel free to customize this demo to suit your specific use case.
 5. **Run the app:**
 
    ```bash
+   unset NODE_OPTIONS && npm run dev
    npm run dev
    ```
 
@@ -67,6 +70,31 @@ Feel free to customize this demo to suit your specific use case.
 6. **Initialize the vector store:**
 
    Go to [`/init_vs`](http://localhost:3000/init_vs) to create a vector store and initialize it with the knowledge base. Once you have created the vector store, update `config/constants.ts` with your own vector store ID.
+
+### Multi-Computer Setup
+
+To run the customer and agent views on separate computers:
+
+1. **Set up the server computer:**
+   - Follow steps 1-6 above on the server computer
+   - Make sure the server is accessible from other computers on the network
+
+2. **Generate a session:**
+   - Go to [`/session`](http://localhost:3000/session) on the server
+   - Click "Generate New Session" to create a unique session ID
+   - Copy the generated URLs
+
+3. **Connect from separate computers:**
+   - On the customer computer: Open the Customer URL
+   - On the agent computer: Open the Agent URL
+   - Both computers will be connected in real-time via WebSocket
+
+4. **Network configuration:**
+   - Ensure both computers are on the same network
+   - Update the `NEXT_PUBLIC_SOCKET_URL` in your `.env` file to use the server's IP address:
+   ```bash
+   NEXT_PUBLIC_SOCKET_URL=http://192.168.1.100:3000
+   ```
 
 ## Demo Flow
 

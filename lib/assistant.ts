@@ -106,7 +106,7 @@ export const handleTurn = async (
   }
 };
 
-export const processMessages = async () => {
+export const processMessages = async (sendMessage?: (message: any) => void) => {
   const {
     chatMessages,
     conversationItems,
@@ -171,6 +171,18 @@ export const processMessages = async () => {
 
       case "response.output_text.done": {
         setSuggestedMessageDone(true);
+        
+        // Send AI response via WebSocket if sendMessage function is provided
+        if (sendMessage && assistantMessageContent.trim()) {
+          const aiMessage = {
+            id: Date.now().toString(),
+            type: "message",
+            role: "assistant",
+            content: [{ type: "output_text", text: assistantMessageContent.trim() }]
+          };
+          console.log('Sending AI response via WebSocket:', aiMessage);
+          sendMessage(aiMessage);
+        }
         break;
       }
 

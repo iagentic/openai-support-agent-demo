@@ -31,6 +31,10 @@ interface ConversationState {
   agentTyping: boolean;
   setAgentTyping: (typing: boolean) => void;
 
+  // WebSocket connection status
+  isConnected: boolean;
+  setIsConnected: (connected: boolean) => void;
+
   setChatMessages: (items: Item[]) => void;
   setConversationItems: (messages: any[]) => void;
   addChatMessage: (item: Item) => void;
@@ -58,9 +62,11 @@ const useConversationStore = create<ConversationState>((set) => ({
   userTyping: false,
   agentTyping: false,
   composerText: "",
+  isConnected: false,
   setUserTyping: (typing) => set({ userTyping: typing }),
   setAgentTyping: (typing) => set({ agentTyping: typing }),
   setComposerText: (text) => set({ composerText: text }),
+  setIsConnected: (connected) => set({ isConnected: connected }),
   setChatMessages: (items) => set({ chatMessages: items }),
   setConversationItems: (messages) => set({ conversationItems: messages }),
   addChatMessage: (item) =>
