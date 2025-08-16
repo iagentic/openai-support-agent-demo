@@ -347,7 +347,7 @@ export const processMessages = async (sendAISuggestion?: (suggestion: any) => vo
             });
 
             // Create another turn after tool output has been added
-            await processMessages();
+            await processMessages(sendAISuggestion);
           }
         }
 
