@@ -41,7 +41,9 @@ export const useSocket = ({ sessionId, onMessage, onConversationState, onTyping 
     // Create new socket if we don't have one
     if (!globalSocket) {
       console.log('Creating new socket for session:', sessionId);
-      globalSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000', {
+      // Use environment variable or fallback to current origin
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+      globalSocket = io(socketUrl, {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
