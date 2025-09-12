@@ -15,6 +15,8 @@ import Chat from "@/components/Chat";
 import { useSocket } from "@/lib/useSocket";
 import { useSearchParams } from "next/navigation";
 import { tools } from "@/lib/tools/tools";
+import useDataStore from "@/stores/useDataStore";
+import { processMessages } from "@/lib/assistant";
 
 export default function AgentView() {
   const searchParams = useSearchParams();
@@ -48,6 +50,9 @@ export default function AgentView() {
         } as any;
         useConversationStore.getState().setSuggestedMessage(suggestedMessage);
         useConversationStore.getState().setSuggestedMessageDone(true);
+        
+        // Don't automatically add AI suggestions to conversation items
+        // They should only be shown as suggestions for the agent to review
       } else if (message.role === 'user' || message.role === 'assistant') {
         console.log('Agent processing message:', message);
         const newItem: Item = {
@@ -58,12 +63,17 @@ export default function AgentView() {
         };
         addChatMessage(newItem);
         
-        // Also add to conversation items for AI processing
+        // Add to conversation items and trigger file search for relevant articles
         const conversationItem = {
           role: message.role,
           content: Array.isArray(message.content) ? message.content[0]?.text || '' : message.content
         };
         addConversationItem(conversationItem);
+        
+        // Trigger file search to update relevant articles when user sends a message
+        if (message.role === 'user') {
+          processMessages(undefined, false).catch(console.error);
+        }
       } else {
         console.log('Agent ignoring message with role:', message.role);
       }
@@ -111,17 +121,25 @@ export default function AgentView() {
       content: message.trim(),
     };
 
-    // Add to local state
-    addConversationItem(agentMessage);
-    addChatMessage(agentItem);
-    
-    // Send via WebSocket
-    sendMessage({
-      id: Date.now().toString(),
-      type: "message",
-      role: "agent",
-      content: [{ type: "input_text", text: message.trim() }]
-    });
+    try {
+      // Add to local state
+      addConversationItem(agentMessage);
+      addChatMessage(agentItem);
+      
+      // Send via WebSocket
+      sendMessage({
+        id: Date.now().toString(),
+        type: "message",
+        role: "agent",
+        content: [{ type: "input_text", text: message.trim() }]
+      });
+
+      // Don't process messages automatically in agent view
+      // File search and relevant articles should be triggered by customer view
+      // Agent view should only send manual messages
+    } catch (error) {
+      console.error("Error processing message:", error);
+    }
   };
 
   return (

@@ -106,7 +106,7 @@ export const handleTurn = async (
   }
 };
 
-export const processMessages = async (sendAISuggestion?: (suggestion: any) => void) => {
+export const processMessages = async (sendAISuggestion?: (suggestion: any) => void, shouldSendSuggestions: boolean = true) => {
   const {
     chatMessages,
     conversationItems,
@@ -179,7 +179,7 @@ export const processMessages = async (sendAISuggestion?: (suggestion: any) => vo
         setSuggestedMessageDone(true);
         
         // Send AI response as a suggestion to the agent view via WebSocket
-        if (sendAISuggestion && assistantMessageContent.trim()) {
+        if (sendAISuggestion && assistantMessageContent.trim() && shouldSendSuggestions) {
           const aiSuggestion = {
             id: Date.now().toString(),
             type: "ai_suggestion",
@@ -347,7 +347,7 @@ export const processMessages = async (sendAISuggestion?: (suggestion: any) => vo
             });
 
             // Create another turn after tool output has been added
-            await processMessages(sendAISuggestion);
+            await processMessages(sendAISuggestion, shouldSendSuggestions);
           }
         }
 

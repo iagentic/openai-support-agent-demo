@@ -26,7 +26,7 @@ app.prepare().then(() => {
   // Initialize WebSocket server
   socketServer.initialize(server);
 
-  server.listen(port, () => {
+  server.listen(port, hostname, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
   });
 });
