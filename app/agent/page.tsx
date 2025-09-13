@@ -17,6 +17,7 @@ import { useSearchParams } from "next/navigation";
 import { tools } from "@/lib/tools/tools";
 import useDataStore from "@/stores/useDataStore";
 import { processMessages } from "@/lib/assistant";
+import { Switch } from "@/components/ui/switch";
 
 export default function AgentView() {
   const searchParams = useSearchParams();
@@ -29,8 +30,13 @@ export default function AgentView() {
     addChatMessage, 
     setChatMessages,
     setConversationItems,
-    setIsConnected 
+    setIsConnected,
+    autoPilotEnabled,
+    setAutoPilotEnabled
   } = useConversationStore();
+
+  // Track which AI suggestions were auto-dispatched to prevent duplicates
+  const dispatchedSuggestionIdsRef = React.useRef<Set<string>>(new Set());
 
   const { isConnected, sendMessage, updateConversation, sendTyping } = useSocket({
     sessionId,
@@ -53,6 +59,37 @@ export default function AgentView() {
         
         // Don't automatically add AI suggestions to conversation items
         // They should only be shown as suggestions for the agent to review
+
+        // Auto-pilot: if enabled, auto-send this suggestion to the conversation
+        if (autoPilotEnabled && message.id && !dispatchedSuggestionIdsRef.current.has(message.id)) {
+          dispatchedSuggestionIdsRef.current.add(message.id);
+
+          // Add to local chat
+          const autoItem: Item = {
+            type: "message",
+            role: "agent",
+            id: message.id,
+            content: message.content,
+          } as any;
+          addChatMessage(autoItem);
+
+          // Add to conversation items (as assistant for model compatibility)
+          addConversationItem({
+            role: "assistant",
+            content: Array.isArray(message.content) ? message.content[0]?.text || '' : message.content as any,
+          } as any);
+
+          // Broadcast to other clients
+          sendMessage({
+            id: message.id,
+            type: "message",
+            role: "agent",
+            content: message.content,
+          });
+
+          // Optionally trigger file search refresh without generating text
+          processMessages(undefined, false).catch(console.error);
+        }
       } else if (message.role === 'user' || message.role === 'assistant') {
         console.log('Agent processing message:', message);
         const newItem: Item = {
@@ -145,8 +182,18 @@ export default function AgentView() {
   return (
     <div className="relative flex flex-1 min-h-0 bg-white rounded-lg p-4 gap-4">
       <div className="w-full md:w-3/5">
-        <div className="mb-4 text-sm text-gray-500">
-          Session: {sessionId} | Status: {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+        <div className="mb-4 text-sm text-gray-500 flex items-center justify-between">
+          <div>
+            Session: {sessionId} | Status: {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-600">Auto-pilot</span>
+            <Switch
+              checked={autoPilotEnabled}
+              onCheckedChange={setAutoPilotEnabled}
+              mode="custom"
+            />
+          </div>
         </div>
         <Chat
           items={chatMessages}

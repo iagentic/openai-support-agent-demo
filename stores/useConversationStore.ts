@@ -44,6 +44,10 @@ interface ConversationState {
   setSuggestedMessageDone: (done: boolean) => void;
   removeRecommendedAction: (actionName: string) => void;
   setAnnotations: (annotations: any[]) => void;
+
+  // Auto-pilot mode: when enabled, AI suggestions are auto-sent
+  autoPilotEnabled: boolean;
+  setAutoPilotEnabled: (enabled: boolean) => void;
 }
 
 const useConversationStore = create<ConversationState>((set) => ({
@@ -85,6 +89,8 @@ const useConversationStore = create<ConversationState>((set) => ({
       ),
     })),
   setAnnotations: (annotations) => set({ annotations }),
+  autoPilotEnabled: false,
+  setAutoPilotEnabled: (enabled) => set({ autoPilotEnabled: enabled }),
 }));
 
 export default useConversationStore;
