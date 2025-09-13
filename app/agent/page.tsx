@@ -74,9 +74,12 @@ export default function AgentView() {
           addChatMessage(autoItem);
 
           // Add to conversation items (as assistant for model compatibility)
+          const suggestionText = Array.isArray(message.content) 
+            ? message.content[0]?.text || '' 
+            : message.content as string;
           addConversationItem({
             role: "assistant",
-            content: Array.isArray(message.content) ? message.content[0]?.text || '' : message.content as any,
+            content: suggestionText,
           } as any);
 
           // Broadcast to other clients
@@ -87,11 +90,23 @@ export default function AgentView() {
             content: message.content,
           });
 
+          // Clear the suggested message since it was auto-sent
+          useConversationStore.getState().setSuggestedMessage(null);
+          useConversationStore.getState().setSuggestedMessageDone(false);
+
           // Optionally trigger file search refresh without generating text
           processMessages(undefined, false).catch(console.error);
         }
       } else if (message.role === 'user' || message.role === 'assistant') {
         console.log('Agent processing message:', message);
+        
+        // Clear any existing suggestions when a new user message arrives
+        if (message.role === 'user') {
+          console.log('Clearing existing suggestions for new user message');
+          useConversationStore.getState().setSuggestedMessage(null);
+          useConversationStore.getState().setSuggestedMessageDone(false);
+        }
+        
         const newItem: Item = {
           type: message.type,
           role: message.role,
